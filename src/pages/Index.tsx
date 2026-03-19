@@ -69,10 +69,6 @@ export default function Index() {
           </Button>
         </div>
       </header>
-            </p>
-          </motion.div>
-        </div>
-      </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
         {/* Farm Registration */}
