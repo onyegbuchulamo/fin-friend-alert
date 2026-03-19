@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/MetricCard";
 import { RiskBadge } from "@/components/RiskBadge";
@@ -21,6 +22,7 @@ const getRecommendation = (risk: RiskLevel): string => {
 };
 
 export default function Index() {
+  const navigate = useNavigate();
   const [farm, setFarm] = useState({ name: "", location: "", phone: "" });
   const [risk, setRisk] = useState<RiskLevel>("SAFE");
   const [recommendation, setRecommendation] = useState("");
@@ -62,6 +64,9 @@ export default function Index() {
               AI-powered aquaculture risk monitoring &amp; early warning system
             </p>
           </motion.div>
+          <Button variant="outline" onClick={() => navigate("/admin")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
+            🛡️ Admin Dashboard
+          </Button>
         </div>
       </header>
 
