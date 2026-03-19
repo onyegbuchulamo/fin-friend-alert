@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { RiskBadge } from "@/components/RiskBadge";
 import { MetricCard } from "@/components/MetricCard";
 import { RiskMap } from "@/components/RiskMap";
+import { LiveStatusBar } from "@/components/LiveStatusBar";
+import { AppFooter } from "@/components/AppFooter";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+} from "recharts";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
@@ -35,17 +41,15 @@ const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number
 };
 
 const generateFarms = (): FarmEntry[] => {
-  const names = ["Laguna Fish Farm", "Batangas Aqua", "Pangasinan Pond", "Iloilo Marine", "Cebu Fishery", "Davao Aquaculture"];
-  const locations = ["Laguna", "Batangas", "Pangasinan", "Iloilo", "Cebu", "Davao"];
+  const names = ["Laguna Fish Farm", "Batangas Aqua", "Pangasinan Pond", "Iloilo Marine", "Cebu Fishery", "Davao Aquaculture", "Zambales Tilapia", "Bulacan Bangus"];
+  const locations = ["Laguna", "Batangas", "Pangasinan", "Iloilo", "Cebu", "Davao", "Zambales", "Bulacan"];
   return names.map((name, i) => {
     const rain = Math.floor(Math.random() * 100);
     const ph = parseFloat((Math.random() * 14).toFixed(1));
     const turbidity = Math.floor(Math.random() * 100);
     const temp = Math.floor(Math.random() * 40);
     return {
-      id: i + 1,
-      name,
-      location: locations[i],
+      id: i + 1, name, location: locations[i],
       risk: calculateRisk(rain, ph, turbidity, temp),
       rain, ph, turbidity, temp,
       lastUpdated: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
@@ -53,19 +57,12 @@ const generateFarms = (): FarmEntry[] => {
   });
 };
 
-const generateAlerts = (farms: FarmEntry[]): AlertEntry[] => {
-  return farms
-    .filter((f) => f.risk !== "SAFE")
-    .map((f, i) => ({
-      id: i + 1,
-      farmName: f.name,
-      risk: f.risk,
-      message: f.risk === "DANGER"
-        ? "Secure pond barriers, prepare emergency harvest."
-        : "Monitor pond closely, reduce feeding.",
-      timestamp: new Date(Date.now() - Math.random() * 7200000).toLocaleTimeString(),
-    }));
-};
+const generateAlerts = (farms: FarmEntry[]): AlertEntry[] =>
+  farms.filter((f) => f.risk !== "SAFE").map((f, i) => ({
+    id: i + 1, farmName: f.name, risk: f.risk,
+    message: f.risk === "DANGER" ? "Secure pond barriers, prepare emergency harvest." : "Monitor pond closely, reduce feeding.",
+    timestamp: new Date(Date.now() - Math.random() * 7200000).toLocaleTimeString(),
+  }));
 
 const riskBg: Record<RiskLevel, string> = {
   SAFE: "bg-safe/10 border-safe/30",
@@ -79,19 +76,25 @@ const riskText: Record<RiskLevel, string> = {
   DANGER: "text-danger",
 };
 
+const riskFill: Record<RiskLevel, string> = {
+  SAFE: "hsl(152, 60%, 42%)",
+  WARNING: "hsl(38, 92%, 50%)",
+  DANGER: "hsl(0, 72%, 51%)",
+};
+
 export default function AdminDashboard() {
   const [farms, setFarms] = useState<FarmEntry[]>([]);
   const [alerts, setAlerts] = useState<AlertEntry[]>([]);
   const [selectedRisk, setSelectedRisk] = useState<RiskLevel | "ALL">("ALL");
   const navigate = useNavigate();
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     const f = generateFarms();
     setFarms(f);
     setAlerts(generateAlerts(f));
-  };
+  }, []);
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const counts = {
     SAFE: farms.filter((f) => f.risk === "SAFE").length,
@@ -100,8 +103,9 @@ export default function AdminDashboard() {
   };
 
   const overallRisk: RiskLevel = counts.DANGER > 0 ? "DANGER" : counts.WARNING > 0 ? "WARNING" : "SAFE";
-
   const filtered = selectedRisk === "ALL" ? farms : farms.filter((f) => f.risk === selectedRisk);
+
+  const chartData = farms.map((f) => ({ name: f.name.split(" ")[0], risk: f.risk === "DANGER" ? 3 : f.risk === "WARNING" ? 2 : 1, riskLevel: f.risk }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,70 +120,81 @@ export default function AdminDashboard() {
               EcoFish Sentinel — System-wide monitoring &amp; management
             </p>
           </motion.div>
-          <Button variant="outline" onClick={() => navigate("/")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
-            ← Back to Monitor
-          </Button>
+          <div className="flex items-center gap-2">
+            <DarkModeToggle />
+            <Button variant="outline" onClick={() => navigate("/")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
+              ← Monitor
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
+        {/* Live Status */}
+        <LiveStatusBar onRefresh={refresh} intervalSeconds={30} />
+
         {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard icon="🏭" label="Total Farms" value={farms.length} delay={0.1} />
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className={`rounded-lg border p-4 shadow-card ${riskBg.SAFE}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">🟢</span>
-              <span className="text-sm font-medium text-muted-foreground">Safe Farms</span>
-            </div>
-            <p className={`text-2xl font-bold ${riskText.SAFE}`}>{counts.SAFE}</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className={`rounded-lg border p-4 shadow-card ${riskBg.WARNING}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">🟡</span>
-              <span className="text-sm font-medium text-muted-foreground">Warning Farms</span>
-            </div>
-            <p className={`text-2xl font-bold ${riskText.WARNING}`}>{counts.WARNING}</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-            className={`rounded-lg border p-4 shadow-card ${riskBg.DANGER}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">🔴</span>
-              <span className="text-sm font-medium text-muted-foreground">Danger Farms</span>
-            </div>
-            <p className={`text-2xl font-bold ${riskText.DANGER}`}>{counts.DANGER}</p>
-          </motion.div>
+          {(["SAFE", "WARNING", "DANGER"] as RiskLevel[]).map((level, i) => (
+            <motion.div key={level} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.05 }}
+              className={`rounded-lg border p-4 shadow-card cursor-pointer transition-shadow hover:shadow-card-hover ${riskBg[level]} ${selectedRisk === level ? 'ring-2 ring-primary' : ''}`}
+              onClick={() => setSelectedRisk(selectedRisk === level ? "ALL" : level)}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{level === "SAFE" ? "🟢" : level === "WARNING" ? "🟡" : "🔴"}</span>
+                <span className="text-sm font-medium text-muted-foreground">{level.charAt(0) + level.slice(1).toLowerCase()}</span>
+              </div>
+              <p className={`text-2xl font-bold ${riskText[level]}`}>{counts[level]}</p>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Color Code Legend */}
+        {/* Risk Distribution Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="rounded-lg bg-card p-5 shadow-card">
+          <h2 className="text-lg font-bold text-card-foreground mb-3">📊 Risk Distribution by Farm</h2>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="name" tick={{ fill: "hsl(210, 15%, 46%)", fontSize: 11 }} />
+                <YAxis tick={{ fill: "hsl(210, 15%, 46%)", fontSize: 11 }} domain={[0, 3]} ticks={[1, 2, 3]}
+                  tickFormatter={(v) => v === 1 ? "Safe" : v === 2 ? "Warn" : "Danger"} />
+                <Tooltip formatter={(value: number) => value === 1 ? "Safe" : value === 2 ? "Warning" : "Danger"}
+                  contentStyle={{ backgroundColor: "hsl(0,0%,100%)", border: "1px solid hsl(200,20%,88%)", borderRadius: "0.5rem", fontSize: "0.8rem" }} />
+                <Bar dataKey="risk" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={riskFill[entry.riskLevel]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Color Code Legend */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <h2 className="text-lg font-bold text-card-foreground mb-3">🎨 Risk Color Codes</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className={`rounded-md border p-3 ${riskBg.SAFE}`}>
-              <div className="flex items-center gap-2 mb-1">
-                <RiskBadge risk="SAFE" />
-              </div>
-              <p className="text-sm text-muted-foreground">All parameters within normal range. Continue routine monitoring.</p>
+              <RiskBadge risk="SAFE" />
+              <p className="text-sm text-muted-foreground mt-2">All parameters normal. Routine monitoring.</p>
             </div>
             <div className={`rounded-md border p-3 ${riskBg.WARNING}`}>
-              <div className="flex items-center gap-2 mb-1">
-                <RiskBadge risk="WARNING" />
-              </div>
-              <p className="text-sm text-muted-foreground">Rain &gt;50mm, pH outside 6–9, or temp &gt;32°C. Requires attention.</p>
+              <RiskBadge risk="WARNING" />
+              <p className="text-sm text-muted-foreground mt-2">Rain &gt;50mm, pH outside 6–9, or temp &gt;32°C.</p>
             </div>
             <div className={`rounded-md border p-3 ${riskBg.DANGER}`}>
-              <div className="flex items-center gap-2 mb-1">
-                <RiskBadge risk="DANGER" />
-              </div>
-              <p className="text-sm text-muted-foreground">Rain &gt;75mm AND turbidity &gt;60 NTU. Immediate action required.</p>
+              <RiskBadge risk="DANGER" />
+              <p className="text-sm text-muted-foreground mt-2">Rain &gt;75mm AND turbidity &gt;60 NTU. Act now.</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Farm Filter & Table */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+        {/* Farm Table */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-bold text-card-foreground">🏭 Farm Overview</h2>
@@ -191,27 +206,20 @@ export default function AdminDashboard() {
                   {level === "ALL" ? "All" : level.charAt(0) + level.slice(1).toLowerCase()}
                 </Button>
               ))}
-              <Button size="sm" variant="outline" onClick={refresh}>🔄</Button>
             </div>
           </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  <th className="pb-2 font-semibold text-muted-foreground">Farm</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Location</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Risk</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Rain</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">pH</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Turbidity</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Temp</th>
-                  <th className="pb-2 font-semibold text-muted-foreground">Updated</th>
+                  {["Farm", "Location", "Risk", "Rain", "pH", "Turbidity", "Temp", "Updated"].map((h) => (
+                    <th key={h} className="pb-2 font-semibold text-muted-foreground">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((farm) => (
-                  <tr key={farm.id} className={`border-b border-border/50 ${riskBg[farm.risk]}`}>
+                  <tr key={farm.id} className={`border-b border-border/50 ${riskBg[farm.risk]} transition-colors`}>
                     <td className="py-3 font-medium text-card-foreground">{farm.name}</td>
                     <td className="py-3 text-muted-foreground">{farm.location}</td>
                     <td className="py-3"><RiskBadge risk={farm.risk} /></td>
@@ -227,33 +235,41 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Alerts Log */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+        {/* Alerts */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
           className="rounded-lg bg-card p-5 shadow-card">
-          <h2 className="text-lg font-bold text-card-foreground mb-3">🚨 Active Alerts</h2>
+          <h2 className="text-lg font-bold text-card-foreground mb-3">
+            🚨 Active Alerts <span className="text-sm font-normal text-muted-foreground ml-2">({alerts.length})</span>
+          </h2>
           {alerts.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No active alerts — all farms are operating safely.</p>
+            <div className="text-center py-6 text-muted-foreground">
+              <span className="text-3xl block mb-2">✅</span>
+              <p className="text-sm">All farms operating safely — no active alerts.</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {alerts.map((alert) => (
-                <div key={alert.id} className={`rounded-md border p-3 flex items-start gap-3 ${riskBg[alert.risk]}`}>
+                <motion.div key={alert.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                  className={`rounded-md border p-3 flex items-start gap-3 ${riskBg[alert.risk]}`}>
                   <RiskBadge risk={alert.risk} />
                   <div className="flex-1">
                     <p className="font-medium text-card-foreground text-sm">{alert.farmName}</p>
                     <p className="text-muted-foreground text-sm">{alert.message}</p>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">{alert.timestamp}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
         </motion.div>
 
         {/* Risk Map */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <RiskMap risk={overallRisk} />
         </motion.div>
       </main>
+
+      <AppFooter />
     </div>
   );
 }
