@@ -14,6 +14,11 @@ import { FishStockImpact } from "@/components/FishStockImpact";
 import { HowItWorks } from "@/components/HowItWorks";
 import { AppFooter } from "@/components/AppFooter";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { WaterQualityIndex } from "@/components/WaterQualityIndex";
+import { HeroStats } from "@/components/HeroStats";
+import { NotificationLog } from "@/components/NotificationLog";
+import { EmergencyContacts } from "@/components/EmergencyContacts";
+import { ReportExport } from "@/components/ReportExport";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
@@ -35,15 +40,16 @@ export default function Index() {
   const [risk, setRisk] = useState<RiskLevel>("SAFE");
   const [recommendation, setRecommendation] = useState("");
   const [weather, setWeather] = useState({ rain: 0 });
-  const [water, setWater] = useState({ ph: 7, turbidity: 30, temp: 28 });
+  const [water, setWater] = useState({ ph: 7, turbidity: 30, temp: 28, dissolvedOxygen: 6.5 });
 
   const simulate = useCallback(() => {
     const rain = Math.floor(Math.random() * 100);
     const ph = parseFloat((Math.random() * 14).toFixed(1));
     const turbidity = Math.floor(Math.random() * 100);
     const temp = Math.floor(Math.random() * 40);
+    const dissolvedOxygen = parseFloat((Math.random() * 10 + 1).toFixed(1));
     setWeather({ rain });
-    setWater({ ph, turbidity, temp });
+    setWater({ ph, turbidity, temp, dissolvedOxygen });
     const riskLevel = calculateRisk(rain, ph, turbidity, temp);
     setRisk(riskLevel);
     setRecommendation(getRecommendation(riskLevel));
@@ -90,6 +96,9 @@ export default function Index() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
+        {/* Hero Stats */}
+        <HeroStats />
+
         {/* Live Status */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <LiveStatusBar onRefresh={simulate} intervalSeconds={30} />
@@ -105,11 +114,12 @@ export default function Index() {
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-3">
             📊 Farm Status Dashboard
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <MetricCard icon="🌧️" label="Rainfall" value={weather.rain} unit="mm" delay={0.15} />
             <MetricCard icon="💧" label="pH Level" value={water.ph} delay={0.2} />
             <MetricCard icon="🌫️" label="Turbidity" value={water.turbidity} unit="NTU" delay={0.25} />
             <MetricCard icon="🌡️" label="Temperature" value={water.temp} unit="°C" delay={0.3} />
+            <MetricCard icon="🫧" label="Dissolved O₂" value={water.dissolvedOxygen} unit="mg/L" delay={0.35} />
           </div>
         </div>
 
@@ -138,6 +148,15 @@ export default function Index() {
           </div>
         </motion.div>
 
+        {/* Water Quality Index */}
+        <WaterQualityIndex
+          ph={water.ph}
+          turbidity={water.turbidity}
+          temp={water.temp}
+          dissolvedOxygen={water.dissolvedOxygen}
+          risk={risk}
+        />
+
         {/* Trend Chart */}
         <TrendChart rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
 
@@ -147,10 +166,27 @@ export default function Index() {
         {/* Fish Stock Impact */}
         <FishStockImpact risk={risk} />
 
+        {/* Notification Log */}
+        <NotificationLog />
+
         {/* Risk Map */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <RiskMap risk={risk} />
         </motion.div>
+
+        {/* Emergency Contacts */}
+        <EmergencyContacts />
+
+        {/* Report Export */}
+        <ReportExport
+          risk={risk}
+          rain={weather.rain}
+          ph={water.ph}
+          turbidity={water.turbidity}
+          temp={water.temp}
+          dissolvedOxygen={water.dissolvedOxygen}
+          farmName={farm.name}
+        />
 
         {/* How It Works */}
         <HowItWorks />
