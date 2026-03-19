@@ -22,6 +22,7 @@ const getRecommendation = (risk: RiskLevel): string => {
 };
 
 export default function Index() {
+  const navigate = useNavigate();
   const [farm, setFarm] = useState({ name: "", location: "", phone: "" });
   const [risk, setRisk] = useState<RiskLevel>("SAFE");
   const [recommendation, setRecommendation] = useState("");
