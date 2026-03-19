@@ -1,11 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/MetricCard";
 import { RiskBadge } from "@/components/RiskBadge";
 import { FarmRegistration } from "@/components/FarmRegistration";
 import { RiskMap } from "@/components/RiskMap";
+import { TrendChart } from "@/components/TrendChart";
+import { AIForecast } from "@/components/AIForecast";
+import { LiveStatusBar } from "@/components/LiveStatusBar";
+import { FishStockImpact } from "@/components/FishStockImpact";
+import { HowItWorks } from "@/components/HowItWorks";
+import { AppFooter } from "@/components/AppFooter";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
@@ -44,7 +52,13 @@ export default function Index() {
   useEffect(() => { simulate(); }, [simulate]);
 
   const sendAlert = () => {
-    alert(`SMS SENT: ${risk} risk detected. ${recommendation}`);
+    if (risk === "DANGER") {
+      toast.error(`🔴 DANGER ALERT: ${recommendation}`, { duration: 5000 });
+    } else if (risk === "WARNING") {
+      toast.warning(`🟡 WARNING: ${recommendation}`, { duration: 4000 });
+    } else {
+      toast.success(`🟢 All Clear: ${recommendation}`, { duration: 3000 });
+    }
   };
 
   return (
@@ -52,25 +66,35 @@ export default function Index() {
       {/* Header */}
       <header className="ocean-gradient px-6 py-8 sm:py-12">
         <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-primary-foreground tracking-tight">
-              🌊 EcoFish Sentinel
-            </h1>
-            <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
-              AI-powered aquaculture risk monitoring &amp; early warning system
-            </p>
-          </motion.div>
-          <Button variant="outline" onClick={() => navigate("/admin")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
-            🛡️ Admin Dashboard
-          </Button>
+          <div className="flex items-start justify-between">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-primary-foreground tracking-tight">
+                🌊 EcoFish Sentinel
+              </h1>
+              <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
+                AI-powered aquaculture risk monitoring &amp; early warning system
+              </p>
+            </motion.div>
+            <div className="flex items-center gap-2">
+              <DarkModeToggle />
+              <Button variant="outline" onClick={() => navigate("/admin")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
+                🛡️ Admin
+              </Button>
+            </div>
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
+        {/* Live Status */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <LiveStatusBar onRefresh={simulate} intervalSeconds={30} />
+        </motion.div>
+
         {/* Farm Registration */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <FarmRegistration farm={farm} onChange={setFarm} />
@@ -105,7 +129,7 @@ export default function Index() {
             </div>
             <div className="flex gap-3 shrink-0">
               <Button variant="outline" onClick={simulate}>
-                🔄 Refresh Data
+                🔄 Refresh
               </Button>
               <Button onClick={sendAlert} className="ocean-gradient text-primary-foreground border-0 hover:opacity-90">
                 📩 Send Alert
@@ -114,11 +138,25 @@ export default function Index() {
           </div>
         </motion.div>
 
+        {/* Trend Chart */}
+        <TrendChart rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
+
+        {/* AI Forecast */}
+        <AIForecast risk={risk} rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
+
+        {/* Fish Stock Impact */}
+        <FishStockImpact risk={risk} />
+
         {/* Risk Map */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <RiskMap risk={risk} />
         </motion.div>
+
+        {/* How It Works */}
+        <HowItWorks />
       </main>
+
+      <AppFooter />
     </div>
   );
 }
