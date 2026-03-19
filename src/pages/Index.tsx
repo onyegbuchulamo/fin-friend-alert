@@ -64,6 +64,13 @@ export default function Index() {
               AI-powered aquaculture risk monitoring &amp; early warning system
             </p>
           </motion.div>
+          <Button variant="outline" onClick={() => navigate("/admin")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
+            🛡️ Admin Dashboard
+          </Button>
+        </div>
+      </header>
+            </p>
+          </motion.div>
         </div>
       </header>
 
