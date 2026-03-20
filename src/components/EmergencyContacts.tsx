@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 
 const contacts = [
-  { role: "Farm Manager", name: "Juan dela Cruz", phone: "+63 917 123 4567", icon: "👨‍🌾", available: true },
-  { role: "Water Quality Officer", name: "Maria Santos", phone: "+63 918 234 5678", icon: "🧑‍🔬", available: true },
-  { role: "Emergency Response", name: "BFAR Hotline", phone: "02-929-8183", icon: "🚨", available: true },
-  { role: "Veterinary Expert", name: "Dr. Reyes", phone: "+63 919 345 6789", icon: "🩺", available: false },
+  { role: "Farm Director", name: "Engr. Chukwuemeka Okafor", phone: "+234 704 217 6940", icon: "👨‍🌾", available: true },
+  { role: "Water Quality Analyst", name: "Dr. Adaeze Nwosu", phone: "+234 909 082 2825", icon: "🧑‍🔬", available: true },
+  { role: "Emergency Response Lead", name: "Obiora Eze", phone: "+234 704 217 6940", icon: "🚨", available: true },
+  { role: "Aquaculture Veterinarian", name: "Dr. Chidinma Uche", phone: "+234 909 082 2825", icon: "🩺", available: true },
+  { role: "IoT Systems Engineer", name: "Ikechukwu Nwankwo", phone: "+234 704 217 6940", icon: "⚙️", available: true },
+  { role: "Community Liaison Officer", name: "Ngozi Amanke", phone: "+234 909 082 2825", icon: "🤝", available: false },
 ];
 
 export function EmergencyContacts() {
@@ -18,7 +20,7 @@ export function EmergencyContacts() {
       <h2 className="text-lg font-bold text-card-foreground flex items-center gap-2 mb-4">
         📞 Emergency Contacts
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {contacts.map((contact, i) => (
           <motion.div
             key={contact.role}

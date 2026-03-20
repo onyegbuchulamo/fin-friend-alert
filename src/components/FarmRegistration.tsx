@@ -23,7 +23,7 @@ export function FarmRegistration({ farm, onChange }: FarmRegistrationProps) {
           <Label htmlFor="farm-name">Farm Name</Label>
           <Input
             id="farm-name"
-            placeholder="e.g. Sunrise Fishery"
+            placeholder="e.g. Renaissance Farms"
             value={farm.name}
             onChange={(e) => onChange({ ...farm, name: e.target.value })}
           />
@@ -32,7 +32,7 @@ export function FarmRegistration({ farm, onChange }: FarmRegistrationProps) {
           <Label htmlFor="farm-location">Location</Label>
           <Input
             id="farm-location"
-            placeholder="e.g. Laguna Province"
+            placeholder="e.g. Umuahia, Abia State"
             value={farm.location}
             onChange={(e) => onChange({ ...farm, location: e.target.value })}
           />
@@ -41,7 +41,7 @@ export function FarmRegistration({ farm, onChange }: FarmRegistrationProps) {
           <Label htmlFor="farm-phone">Phone Number</Label>
           <Input
             id="farm-phone"
-            placeholder="+63 XXX XXX XXXX"
+            placeholder="+234 XXX XXX XXXX"
             value={farm.phone}
             onChange={(e) => onChange({ ...farm, phone: e.target.value })}
           />

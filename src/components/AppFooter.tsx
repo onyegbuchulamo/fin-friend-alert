@@ -4,11 +4,13 @@ export function AppFooter() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
           <div>
-            <h3 className="font-bold text-card-foreground mb-2">🌊 EcoFish Sentinel</h3>
+            <h3 className="font-bold text-card-foreground mb-2">🌊 Renaissance Farms</h3>
             <p className="text-muted-foreground text-xs leading-relaxed">
               AI-powered aquaculture risk monitoring and early warning system. Protecting fish farms
-              through real-time environmental intelligence.
+              across South East Nigeria through real-time environmental intelligence.
             </p>
+            <p className="text-xs text-muted-foreground mt-2 font-mono">📍 Abia State, South East Nigeria</p>
+            <p className="text-xs text-muted-foreground font-mono">📞 +234 704 217 6940</p>
           </div>
           <div>
             <h3 className="font-semibold text-card-foreground mb-2">Technology Stack</h3>
@@ -30,7 +32,7 @@ export function AppFooter() {
           </div>
         </div>
         <div className="mt-6 pt-4 border-t border-border text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} EcoFish Sentinel — Built for Sustainable Aquaculture
+          © {new Date().getFullYear()} Renaissance Farms — Powered by EcoFish Sentinel · South East, Nigeria
         </div>
       </div>
     </footer>
