@@ -15,11 +15,11 @@ interface Notification {
 const generateNotifications = (): Notification[] => {
   const now = Date.now();
   return [
-    { id: 1, risk: "DANGER", message: "Flood risk detected — emergency harvest recommended for Laguna Farm", timestamp: new Date(now - 180000).toLocaleTimeString(), channel: "SMS + Push" },
-    { id: 2, risk: "WARNING", message: "pH levels rising above threshold at Batangas Aqua pond #3", timestamp: new Date(now - 600000).toLocaleTimeString(), channel: "Push" },
-    { id: 3, risk: "SAFE", message: "All sensors restored to normal at Pangasinan Pond", timestamp: new Date(now - 1800000).toLocaleTimeString(), channel: "Email" },
-    { id: 4, risk: "WARNING", message: "Temperature spike to 33°C detected at Iloilo Marine", timestamp: new Date(now - 3600000).toLocaleTimeString(), channel: "SMS" },
-    { id: 5, risk: "DANGER", message: "Turbidity exceeded 80 NTU during heavy rainfall at Cebu Fishery", timestamp: new Date(now - 5400000).toLocaleTimeString(), channel: "SMS + Push" },
+    { id: 1, risk: "DANGER", message: "Flood risk detected — emergency harvest recommended for Renaissance Farms HQ, Umuahia", timestamp: new Date(now - 180000).toLocaleTimeString(), channel: "SMS + Push" },
+    { id: 2, risk: "WARNING", message: "pH levels rising above threshold at Ngwa Aquaculture Centre, Aba", timestamp: new Date(now - 600000).toLocaleTimeString(), channel: "Push" },
+    { id: 3, risk: "SAFE", message: "All sensors restored to normal at Ohafia Fish Farm", timestamp: new Date(now - 1800000).toLocaleTimeString(), channel: "Email" },
+    { id: 4, risk: "WARNING", message: "Temperature spike to 33°C detected at Bende Integrated Fishery", timestamp: new Date(now - 3600000).toLocaleTimeString(), channel: "SMS" },
+    { id: 5, risk: "DANGER", message: "Turbidity exceeded 80 NTU during heavy rainfall at Ukwa Catfish Estate", timestamp: new Date(now - 5400000).toLocaleTimeString(), channel: "SMS + Push" },
   ];
 };
 

@@ -36,7 +36,7 @@ const getRecommendation = (risk: RiskLevel): string => {
 
 export default function Index() {
   const navigate = useNavigate();
-  const [farm, setFarm] = useState({ name: "", location: "", phone: "" });
+  const [farm, setFarm] = useState({ name: "Renaissance Farms", location: "South East", phone: "+2347042176940" });
   const [risk, setRisk] = useState<RiskLevel>("SAFE");
   const [recommendation, setRecommendation] = useState("");
   const [weather, setWeather] = useState({ rain: 0 });

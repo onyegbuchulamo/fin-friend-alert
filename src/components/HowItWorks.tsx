@@ -4,7 +4,7 @@ const steps = [
   {
     icon: "📡",
     title: "Data Collection",
-    desc: "IoT sensors continuously monitor rainfall, pH, turbidity, and temperature across all registered fish ponds.",
+    desc: "IoT sensors across Abia State continuously monitor rainfall, pH, turbidity, and temperature across all registered fish ponds.",
   },
   {
     icon: "🧠",
@@ -14,7 +14,7 @@ const steps = [
   {
     icon: "⚡",
     title: "Instant Alerts",
-    desc: "Automated SMS and push notifications warn farmers before disasters strike, enabling proactive emergency response.",
+    desc: "Automated SMS and push notifications warn farmers across South East Nigeria before disasters strike, enabling proactive response.",
   },
   {
     icon: "📊",
@@ -32,7 +32,7 @@ export function HowItWorks() {
       className="rounded-lg bg-card p-6 shadow-card"
     >
       <h2 className="text-lg font-bold text-card-foreground flex items-center gap-2 mb-5">
-        🔬 How EcoFish Sentinel Works
+        🔬 How Renaissance Farms EcoFish Sentinel Works
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {steps.map((step, i) => (

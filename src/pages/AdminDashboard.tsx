@@ -40,16 +40,25 @@ const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number
   return "SAFE";
 };
 
+const farmData = [
+  { name: "Renaissance Farms HQ", location: "Umuahia, Abia State" },
+  { name: "Ngwa Aquaculture Centre", location: "Aba, Abia State" },
+  { name: "Ohafia Fish Farm", location: "Ohafia, Abia State" },
+  { name: "Arochukwu Pond Systems", location: "Arochukwu, Abia State" },
+  { name: "Bende Integrated Fishery", location: "Bende, Abia State" },
+  { name: "Isiala Ngwa Tilapia Farm", location: "Isiala Ngwa, Abia State" },
+  { name: "Ukwa Catfish Estate", location: "Ukwa, Abia State" },
+  { name: "Osisioma Aqua Hub", location: "Osisioma, Abia State" },
+];
+
 const generateFarms = (): FarmEntry[] => {
-  const names = ["Laguna Fish Farm", "Batangas Aqua", "Pangasinan Pond", "Iloilo Marine", "Cebu Fishery", "Davao Aquaculture", "Zambales Tilapia", "Bulacan Bangus"];
-  const locations = ["Laguna", "Batangas", "Pangasinan", "Iloilo", "Cebu", "Davao", "Zambales", "Bulacan"];
-  return names.map((name, i) => {
+  return farmData.map((fd, i) => {
     const rain = Math.floor(Math.random() * 100);
     const ph = parseFloat((Math.random() * 14).toFixed(1));
     const turbidity = Math.floor(Math.random() * 100);
     const temp = Math.floor(Math.random() * 40);
     return {
-      id: i + 1, name, location: locations[i],
+      id: i + 1, name: fd.name, location: fd.location,
       risk: calculateRisk(rain, ph, turbidity, temp),
       rain, ph, turbidity, temp,
       lastUpdated: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
@@ -109,7 +118,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="ocean-gradient px-6 py-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
@@ -117,7 +125,7 @@ export default function AdminDashboard() {
               🛡️ Admin Dashboard
             </h1>
             <p className="text-primary-foreground/70 mt-1 text-sm">
-              EcoFish Sentinel — System-wide monitoring &amp; management
+              Renaissance Farms — System-wide monitoring &amp; management · South East, Nigeria
             </p>
           </motion.div>
           <div className="flex items-center gap-2">
@@ -130,10 +138,8 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
-        {/* Live Status */}
         <LiveStatusBar onRefresh={refresh} intervalSeconds={30} />
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard icon="🏭" label="Total Farms" value={farms.length} delay={0.1} />
           {(["SAFE", "WARNING", "DANGER"] as RiskLevel[]).map((level, i) => (
@@ -150,7 +156,6 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Risk Distribution Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <h2 className="text-lg font-bold text-card-foreground mb-3">📊 Risk Distribution by Farm</h2>
@@ -173,7 +178,6 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Color Code Legend */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <h2 className="text-lg font-bold text-card-foreground mb-3">🎨 Risk Color Codes</h2>
@@ -193,11 +197,10 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Farm Table */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg font-bold text-card-foreground">🏭 Farm Overview</h2>
+            <h2 className="text-lg font-bold text-card-foreground">🏭 Farm Overview — Abia State</h2>
             <div className="flex items-center gap-2">
               {(["ALL", "SAFE", "WARNING", "DANGER"] as const).map((level) => (
                 <Button key={level} size="sm" variant={selectedRisk === level ? "default" : "outline"}
@@ -235,7 +238,6 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Alerts */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
           className="rounded-lg bg-card p-5 shadow-card">
           <h2 className="text-lg font-bold text-card-foreground mb-3">
@@ -263,7 +265,6 @@ export default function AdminDashboard() {
           )}
         </motion.div>
 
-        {/* Risk Map */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <RiskMap risk={overallRisk} />
         </motion.div>
