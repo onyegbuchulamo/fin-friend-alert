@@ -79,10 +79,10 @@ export default function Index() {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-3xl sm:text-4xl font-extrabold text-primary-foreground tracking-tight">
-                🌊 EcoFish Sentinel
+                🌊 Renaissance Farms
               </h1>
               <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
-                AI-powered aquaculture risk monitoring &amp; early warning system
+                EcoFish Sentinel — AI-powered aquaculture risk monitoring · South East, Nigeria
               </p>
             </motion.div>
             <div className="flex items-center gap-2">
