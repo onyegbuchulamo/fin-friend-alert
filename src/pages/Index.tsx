@@ -68,26 +68,52 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Ambient background mesh */}
+      <div className="pointer-events-none fixed inset-0 mesh-bg opacity-60 dark:opacity-30" />
+      <div className="pointer-events-none fixed inset-0 grid-pattern opacity-[0.35] dark:opacity-20" />
+
       {/* Header */}
-      <header className="ocean-gradient px-6 py-8 sm:py-12">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-start justify-between">
+      <header className="relative aurora-bg px-6 py-10 sm:py-14 overflow-hidden">
+        {/* animated aurora blobs */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-cyan-400/30 blur-3xl animate-aurora" />
+        <div className="pointer-events-none absolute -bottom-32 right-0 w-[500px] h-[500px] rounded-full bg-teal-400/25 blur-3xl animate-float-slow" />
+        <div className="pointer-events-none absolute inset-0 grid-pattern opacity-20" />
+
+        <div className="relative max-w-5xl mx-auto">
+          <div className="flex items-start justify-between gap-4">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
+              className="flex-1 min-w-0"
             >
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-primary-foreground tracking-tight">
+              <div className="inline-flex items-center gap-2 rounded-full glass-dark px-3 py-1 text-xs font-medium text-primary-foreground/90 mb-3">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                Live · IoT Network Online
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-primary-foreground tracking-tight leading-tight">
                 🌊 Renaissance Farms
               </h1>
-              <p className="text-primary-foreground/70 mt-1 text-sm sm:text-base">
+              <p className="text-primary-foreground/80 mt-2 text-sm sm:text-base max-w-2xl">
                 EcoFish Sentinel — AI-powered aquaculture risk monitoring · South East, Nigeria
               </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-primary-foreground/80">
+                <span className="rounded-full glass-dark px-2.5 py-1">UN SDG 2 · 9 · 13 · 14</span>
+                <span className="rounded-full glass-dark px-2.5 py-1">EcoFish-RiskNet v2.1</span>
+                <span className="rounded-full glass-dark px-2.5 py-1">92% Accuracy</span>
+              </div>
             </motion.div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <DarkModeToggle />
-              <Button variant="outline" onClick={() => navigate("/admin")} className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin")}
+                className="glass-dark text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/15"
+              >
                 🛡️ Admin
               </Button>
             </div>
@@ -95,7 +121,8 @@ export default function Index() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
+      <main className="relative max-w-5xl mx-auto px-4 sm:px-6 -mt-6 pb-12 space-y-6">
+
         {/* Hero Stats */}
         <HeroStats />
 
