@@ -7,10 +7,37 @@ interface RiskBadgeProps {
   size?: "sm" | "lg";
 }
 
-const config: Record<RiskLevel, { label: string; icon: string; bg: string; text: string; ring: string }> = {
-  SAFE: { label: "SAFE", icon: "🟢", bg: "bg-safe/15", text: "text-safe", ring: "ring-safe/30" },
-  WARNING: { label: "WARNING", icon: "🟡", bg: "bg-warning/15", text: "text-warning", ring: "ring-warning/30" },
-  DANGER: { label: "DANGER", icon: "🔴", bg: "bg-danger/15", text: "text-danger", ring: "ring-danger/30" },
+const config: Record<
+  RiskLevel,
+  { label: string; dot: string; bg: string; text: string; ring: string; glow: string; pulse: boolean }
+> = {
+  SAFE: {
+    label: "SAFE",
+    dot: "bg-safe",
+    bg: "bg-safe/10",
+    text: "text-safe",
+    ring: "ring-safe/30",
+    glow: "",
+    pulse: false,
+  },
+  WARNING: {
+    label: "WARNING",
+    dot: "bg-warning",
+    bg: "bg-warning/10",
+    text: "text-warning",
+    ring: "ring-warning/40",
+    glow: "glow-warning",
+    pulse: true,
+  },
+  DANGER: {
+    label: "DANGER",
+    dot: "bg-danger",
+    bg: "bg-danger/10",
+    text: "text-danger",
+    ring: "ring-danger/50",
+    glow: "glow-danger",
+    pulse: true,
+  },
 };
 
 export function RiskBadge({ risk, size = "sm" }: RiskBadgeProps) {
@@ -18,12 +45,27 @@ export function RiskBadge({ risk, size = "sm" }: RiskBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full ring-1 font-semibold",
-        c.bg, c.text, c.ring,
-        size === "lg" ? "px-4 py-2 text-base" : "px-3 py-1 text-sm"
+        "inline-flex items-center gap-2 rounded-full ring-1 font-semibold tracking-wide",
+        c.bg,
+        c.text,
+        c.ring,
+        c.glow,
+        size === "lg" ? "px-4 py-2 text-base" : "px-3 py-1 text-xs"
       )}
     >
-      {c.icon} {c.label}
+      <span className="relative inline-flex">
+        <span className={cn("inline-block rounded-full", c.dot, size === "lg" ? "h-2.5 w-2.5" : "h-2 w-2")} />
+        {c.pulse && (
+          <span
+            className={cn(
+              "absolute inset-0 rounded-full animate-pulse-ring",
+              c.dot,
+              "opacity-60"
+            )}
+          />
+        )}
+      </span>
+      {c.label}
     </span>
   );
 }
