@@ -19,12 +19,16 @@ import { HeroStats } from "@/components/HeroStats";
 import { NotificationLog } from "@/components/NotificationLog";
 import { EmergencyContacts } from "@/components/EmergencyContacts";
 import { ReportExport } from "@/components/ReportExport";
+import { PondManager } from "@/components/PondManager";
+import { WeatherForecast } from "@/components/WeatherForecast";
+import { FeedingSchedule } from "@/components/FeedingSchedule";
+import { AlertThresholds, DEFAULT_THRESHOLDS, type Thresholds } from "@/components/AlertThresholds";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
-const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number): RiskLevel => {
-  if (rain > 75 && turbidity > 60) return "DANGER";
-  if (rain > 50 || ph < 6 || ph > 9 || temp > 32) return "WARNING";
+const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number, t: Thresholds): RiskLevel => {
+  if (rain > t.rainDanger && turbidity > t.turbidityDanger) return "DANGER";
+  if (rain > t.rainWarning || ph < 6 || ph > 9 || temp > t.tempWarning) return "WARNING";
   return "SAFE";
 };
 
@@ -33,6 +37,7 @@ const getRecommendation = (risk: RiskLevel): string => {
   if (risk === "WARNING") return "Monitor pond closely, reduce feeding, inspect water source.";
   return "All conditions normal. Continue routine monitoring.";
 };
+
 
 export default function Index() {
   const navigate = useNavigate();
