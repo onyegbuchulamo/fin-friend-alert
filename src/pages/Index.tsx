@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,12 +19,16 @@ import { HeroStats } from "@/components/HeroStats";
 import { NotificationLog } from "@/components/NotificationLog";
 import { EmergencyContacts } from "@/components/EmergencyContacts";
 import { ReportExport } from "@/components/ReportExport";
+import { PondManager } from "@/components/PondManager";
+import { WeatherForecast } from "@/components/WeatherForecast";
+import { FeedingSchedule } from "@/components/FeedingSchedule";
+import { AlertThresholds, DEFAULT_THRESHOLDS, type Thresholds } from "@/components/AlertThresholds";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
-const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number): RiskLevel => {
-  if (rain > 75 && turbidity > 60) return "DANGER";
-  if (rain > 50 || ph < 6 || ph > 9 || temp > 32) return "WARNING";
+const calculateRisk = (rain: number, ph: number, turbidity: number, temp: number, t: Thresholds): RiskLevel => {
+  if (rain > t.rainDanger && turbidity > t.turbidityDanger) return "DANGER";
+  if (rain > t.rainWarning || ph < 6 || ph > 9 || temp > t.tempWarning) return "WARNING";
   return "SAFE";
 };
 
@@ -34,28 +38,32 @@ const getRecommendation = (risk: RiskLevel): string => {
   return "All conditions normal. Continue routine monitoring.";
 };
 
+
 export default function Index() {
   const navigate = useNavigate();
   const [farm, setFarm] = useState({ name: "Renaissance Farms", location: "South East", phone: "+2347042176940" });
-  const [risk, setRisk] = useState<RiskLevel>("SAFE");
-  const [recommendation, setRecommendation] = useState("");
+  const [thresholds, setThresholds] = useState<Thresholds>(DEFAULT_THRESHOLDS);
   const [weather, setWeather] = useState({ rain: 0 });
   const [water, setWater] = useState({ ph: 7, turbidity: 30, temp: 28, dissolvedOxygen: 6.5 });
 
   const simulate = useCallback(() => {
-    const rain = Math.floor(Math.random() * 100);
-    const ph = parseFloat((Math.random() * 14).toFixed(1));
-    const turbidity = Math.floor(Math.random() * 100);
-    const temp = Math.floor(Math.random() * 40);
-    const dissolvedOxygen = parseFloat((Math.random() * 10 + 1).toFixed(1));
-    setWeather({ rain });
-    setWater({ ph, turbidity, temp, dissolvedOxygen });
-    const riskLevel = calculateRisk(rain, ph, turbidity, temp);
-    setRisk(riskLevel);
-    setRecommendation(getRecommendation(riskLevel));
+    setWeather({ rain: Math.floor(Math.random() * 100) });
+    setWater({
+      ph: parseFloat((Math.random() * 14).toFixed(1)),
+      turbidity: Math.floor(Math.random() * 100),
+      temp: Math.floor(Math.random() * 40),
+      dissolvedOxygen: parseFloat((Math.random() * 10 + 1).toFixed(1)),
+    });
   }, []);
 
+  const risk = useMemo(
+    () => calculateRisk(weather.rain, water.ph, water.turbidity, water.temp, thresholds),
+    [weather.rain, water.ph, water.turbidity, water.temp, thresholds],
+  );
+  const recommendation = getRecommendation(risk);
+
   useEffect(() => { simulate(); }, [simulate]);
+
 
   const sendAlert = () => {
     if (risk === "DANGER") {
@@ -184,6 +192,18 @@ export default function Index() {
           risk={risk}
         />
 
+        {/* Alert Rules */}
+        <AlertThresholds value={thresholds} onChange={setThresholds} />
+
+        {/* Pond Manager */}
+        <PondManager />
+
+        {/* 7-Day Flood Outlook */}
+        <WeatherForecast currentRain={weather.rain} />
+
+        {/* Daily Operations */}
+        <FeedingSchedule risk={risk} temp={water.temp} />
+
         {/* Trend Chart */}
         <TrendChart rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
 
@@ -192,6 +212,8 @@ export default function Index() {
 
         {/* Fish Stock Impact */}
         <FishStockImpact risk={risk} />
+
+
 
         {/* Notification Log */}
         <NotificationLog />
