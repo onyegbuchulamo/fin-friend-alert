@@ -192,6 +192,18 @@ export default function Index() {
           risk={risk}
         />
 
+        {/* Alert Rules */}
+        <AlertThresholds value={thresholds} onChange={setThresholds} />
+
+        {/* Pond Manager */}
+        <PondManager />
+
+        {/* 7-Day Flood Outlook */}
+        <WeatherForecast currentRain={weather.rain} />
+
+        {/* Daily Operations */}
+        <FeedingSchedule risk={risk} temp={water.temp} />
+
         {/* Trend Chart */}
         <TrendChart rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
 
@@ -200,6 +212,8 @@ export default function Index() {
 
         {/* Fish Stock Impact */}
         <FishStockImpact risk={risk} />
+
+
 
         {/* Notification Log */}
         <NotificationLog />
