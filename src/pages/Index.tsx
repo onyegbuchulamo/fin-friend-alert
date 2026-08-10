@@ -42,25 +42,28 @@ const getRecommendation = (risk: RiskLevel): string => {
 export default function Index() {
   const navigate = useNavigate();
   const [farm, setFarm] = useState({ name: "Renaissance Farms", location: "South East", phone: "+2347042176940" });
-  const [risk, setRisk] = useState<RiskLevel>("SAFE");
-  const [recommendation, setRecommendation] = useState("");
+  const [thresholds, setThresholds] = useState<Thresholds>(DEFAULT_THRESHOLDS);
   const [weather, setWeather] = useState({ rain: 0 });
   const [water, setWater] = useState({ ph: 7, turbidity: 30, temp: 28, dissolvedOxygen: 6.5 });
 
   const simulate = useCallback(() => {
-    const rain = Math.floor(Math.random() * 100);
-    const ph = parseFloat((Math.random() * 14).toFixed(1));
-    const turbidity = Math.floor(Math.random() * 100);
-    const temp = Math.floor(Math.random() * 40);
-    const dissolvedOxygen = parseFloat((Math.random() * 10 + 1).toFixed(1));
-    setWeather({ rain });
-    setWater({ ph, turbidity, temp, dissolvedOxygen });
-    const riskLevel = calculateRisk(rain, ph, turbidity, temp);
-    setRisk(riskLevel);
-    setRecommendation(getRecommendation(riskLevel));
+    setWeather({ rain: Math.floor(Math.random() * 100) });
+    setWater({
+      ph: parseFloat((Math.random() * 14).toFixed(1)),
+      turbidity: Math.floor(Math.random() * 100),
+      temp: Math.floor(Math.random() * 40),
+      dissolvedOxygen: parseFloat((Math.random() * 10 + 1).toFixed(1)),
+    });
   }, []);
 
+  const risk = useMemo(
+    () => calculateRisk(weather.rain, water.ph, water.turbidity, water.temp, thresholds),
+    [weather.rain, water.ph, water.turbidity, water.temp, thresholds],
+  );
+  const recommendation = getRecommendation(risk);
+
   useEffect(() => { simulate(); }, [simulate]);
+
 
   const sendAlert = () => {
     if (risk === "DANGER") {
