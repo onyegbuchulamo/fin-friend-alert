@@ -7,8 +7,6 @@ import type { ForecastDay, RiskLevel } from "@/hooks/useFarmData";
 
 const icon = (rain: number) => (rain > 75 ? "⛈️" : rain > 45 ? "🌧️" : rain > 20 ? "🌦️" : "☀️");
 
-const level = (rain: number): RiskLevel => (rain > 75 ? "DANGER" : rain > 50 ? "WARNING" : "SAFE");
-
 const tone: Record<RiskLevel, string> = {
   SAFE: "text-safe",
   WARNING: "text-warning",
