@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { Reading } from "@/hooks/useFarmData";
 import { motion } from "framer-motion";
 import {
   AreaChart,
@@ -12,27 +13,24 @@ import {
 } from "recharts";
 
 interface TrendChartProps {
-  rain: number;
-  ph: number;
-  turbidity: number;
-  temp: number;
+  history: Reading[];
 }
 
-export function TrendChart({ rain, ph, turbidity, temp }: TrendChartProps) {
-  const data = useMemo(() => {
-    const hours = ["6AM", "8AM", "10AM", "12PM", "2PM", "4PM", "Now"];
-    return hours.map((time, i) => {
-      const factor = i / (hours.length - 1);
-      const jitter = () => (Math.random() - 0.5) * 10;
-      return {
-        time,
-        Rainfall: Math.max(0, Math.round(rain * 0.3 + (rain * 0.7 * factor) + jitter())),
-        pH: parseFloat((7 + (ph - 7) * factor + (Math.random() - 0.5) * 0.5).toFixed(1)),
-        Turbidity: Math.max(0, Math.round(turbidity * 0.4 + (turbidity * 0.6 * factor) + jitter())),
-        Temperature: Math.max(0, Math.round(temp * 0.8 + (temp * 0.2 * factor) + jitter() * 0.5)),
-      };
-    });
-  }, [rain, ph, turbidity, temp]);
+export function TrendChart({ history }: TrendChartProps) {
+  const data = useMemo(
+    () =>
+      [...history]
+        .slice(0, 12)
+        .reverse()
+        .map((r) => ({
+          time: new Date(r.recorded_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          Rainfall: r.rainfall_mm,
+          pH: r.ph,
+          Turbidity: r.turbidity_ntu,
+          Temperature: r.temperature_c,
+        })),
+    [history],
+  );
 
   return (
     <motion.div
@@ -42,8 +40,11 @@ export function TrendChart({ rain, ph, turbidity, temp }: TrendChartProps) {
       className="rounded-lg bg-card p-6 shadow-card"
     >
       <h2 className="text-lg font-bold text-card-foreground flex items-center gap-2 mb-4">
-        📈 Sensor Trends (Today)
+        📈 Sensor Trends (recorded readings)
       </h2>
+      {data.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No readings recorded yet. Refresh to pull live station data.</p>
+      ) : (
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
@@ -79,6 +80,7 @@ export function TrendChart({ rain, ph, turbidity, temp }: TrendChartProps) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      )}
     </motion.div>
   );
 }

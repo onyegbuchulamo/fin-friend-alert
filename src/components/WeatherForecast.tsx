@@ -1,16 +1,11 @@
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
-type RiskLevel = "SAFE" | "WARNING" | "DANGER";
-
-const DAYS = ["Today", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import type { ForecastDay, RiskLevel } from "@/hooks/useFarmData";
 
 const icon = (rain: number) => (rain > 75 ? "⛈️" : rain > 45 ? "🌧️" : rain > 20 ? "🌦️" : "☀️");
-
-const level = (rain: number): RiskLevel => (rain > 75 ? "DANGER" : rain > 50 ? "WARNING" : "SAFE");
 
 const tone: Record<RiskLevel, string> = {
   SAFE: "text-safe",
@@ -19,25 +14,11 @@ const tone: Record<RiskLevel, string> = {
 };
 
 interface WeatherForecastProps {
-  currentRain: number;
+  forecast: ForecastDay[];
 }
 
-export function WeatherForecast({ currentRain }: WeatherForecastProps) {
-  const forecast = useMemo(() => {
-    let rain = currentRain;
-    return DAYS.map((day, i) => {
-      rain = Math.max(0, Math.min(100, i === 0 ? currentRain : rain + (Math.random() * 44 - 20)));
-      const r = Math.round(rain);
-      return {
-        day,
-        rain: r,
-        temp: Math.round(26 + Math.random() * 8),
-        humidity: Math.round(55 + Math.random() * 40),
-        floodProbability: Math.min(98, Math.round(r * 0.9 + Math.random() * 10)),
-        risk: level(r),
-      };
-    });
-  }, [currentRain]);
+export function WeatherForecast({ forecast }: WeatherForecastProps) {
+  if (forecast.length === 0) return null;
 
   const peak = forecast.reduce((a, b) => (b.floodProbability > a.floodProbability ? b : a));
 
@@ -92,7 +73,7 @@ export function WeatherForecast({ currentRain }: WeatherForecastProps) {
       </div>
 
       <p className="text-xs text-muted-foreground mt-3">
-        Forecast blends regional rainfall models with pond-side sensor drift for Abia State. Prepare drainage and
+        Live 7-day rainfall forecast from the Open-Meteo weather model for this farm\u2019s coordinates. Prepare drainage and
         emergency harvest windows ahead of any day above 70% flood probability.
       </p>
     </motion.section>
