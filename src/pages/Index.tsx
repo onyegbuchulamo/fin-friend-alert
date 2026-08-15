@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/MetricCard";
 import { RiskBadge } from "@/components/RiskBadge";
-import { FarmRegistration } from "@/components/FarmRegistration";
+import { FarmSelector } from "@/components/FarmSelector";
 import { RiskMap } from "@/components/RiskMap";
 import { TrendChart } from "@/components/TrendChart";
 import { AIForecast } from "@/components/AIForecast";
@@ -23,6 +23,7 @@ import { PondManager } from "@/components/PondManager";
 import { WeatherForecast } from "@/components/WeatherForecast";
 import { FeedingSchedule } from "@/components/FeedingSchedule";
 import { AlertThresholds, DEFAULT_THRESHOLDS, type Thresholds } from "@/components/AlertThresholds";
+import { useFarmData } from "@/hooks/useFarmData";
 
 type RiskLevel = "SAFE" | "WARNING" | "DANGER";
 
@@ -41,29 +42,25 @@ const getRecommendation = (risk: RiskLevel): string => {
 
 export default function Index() {
   const navigate = useNavigate();
-  const [farm, setFarm] = useState({ name: "Renaissance Farms", location: "South East", phone: "+2347042176940" });
+  const { farms, farm, farmId, setFarmId, latest, history, forecast, loading, refreshing, error, refresh } =
+    useFarmData();
   const [thresholds, setThresholds] = useState<Thresholds>(DEFAULT_THRESHOLDS);
-  const [weather, setWeather] = useState({ rain: 0 });
-  const [water, setWater] = useState({ ph: 7, turbidity: 30, temp: 28, dissolvedOxygen: 6.5 });
 
-  const simulate = useCallback(() => {
-    setWeather({ rain: Math.floor(Math.random() * 100) });
-    setWater({
-      ph: parseFloat((Math.random() * 14).toFixed(1)),
-      turbidity: Math.floor(Math.random() * 100),
-      temp: Math.floor(Math.random() * 40),
-      dissolvedOxygen: parseFloat((Math.random() * 10 + 1).toFixed(1)),
-    });
-  }, []);
+  const rain = latest?.rainfall_mm ?? 0;
+  const ph = latest?.ph ?? 7;
+  const turbidity = latest?.turbidity_ntu ?? 0;
+  const temp = latest?.temperature_c ?? 0;
+  const dissolvedOxygen = latest?.dissolved_oxygen ?? 0;
 
   const risk = useMemo(
-    () => calculateRisk(weather.rain, water.ph, water.turbidity, water.temp, thresholds),
-    [weather.rain, water.ph, water.turbidity, water.temp, thresholds],
+    () => calculateRisk(rain, ph, turbidity, temp, thresholds),
+    [rain, ph, turbidity, temp, thresholds],
   );
   const recommendation = getRecommendation(risk);
 
-  useEffect(() => { simulate(); }, [simulate]);
-
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   const sendAlert = () => {
     if (risk === "DANGER") {
@@ -104,10 +101,10 @@ export default function Index() {
                 Live · IoT Network Online
               </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold text-primary-foreground tracking-tight leading-tight">
-                🌊 Renaissance Farms
+                🌊 {farm?.name ?? "Renaissance Farms"}
               </h1>
               <p className="text-primary-foreground/80 mt-2 text-sm sm:text-base max-w-2xl">
-                EcoFish Sentinel — AI-powered aquaculture risk monitoring · South East, Nigeria
+                EcoFish Sentinel — live aquaculture risk monitoring · {farm?.location ?? "Abia State, Nigeria"}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-primary-foreground/80">
                 <span className="rounded-full glass-dark px-2.5 py-1">UN SDG 2 · 9 · 13 · 14</span>
@@ -136,25 +133,33 @@ export default function Index() {
 
         {/* Live Status */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <LiveStatusBar onRefresh={simulate} intervalSeconds={30} />
+          <LiveStatusBar onRefresh={refresh} intervalSeconds={300} />
         </motion.div>
 
-        {/* Farm Registration */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <FarmRegistration farm={farm} onChange={setFarm} />
-        </motion.div>
+        {/* Farms */}
+        <FarmSelector
+          farms={farms}
+          farmId={farmId}
+          onSelect={setFarmId}
+          lastUpdated={latest?.recorded_at ?? null}
+        />
 
         {/* Metrics */}
         <div>
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-3">
             📊 Farm Status Dashboard
+            {latest && (
+              <span className="text-xs font-normal text-muted-foreground">
+                · live data · {new Date(latest.recorded_at).toLocaleString()}
+              </span>
+            )}
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <MetricCard icon="🌧️" label="Rainfall" value={weather.rain} unit="mm" delay={0.15} />
-            <MetricCard icon="💧" label="pH Level" value={water.ph} delay={0.2} />
-            <MetricCard icon="🌫️" label="Turbidity" value={water.turbidity} unit="NTU" delay={0.25} />
-            <MetricCard icon="🌡️" label="Temperature" value={water.temp} unit="°C" delay={0.3} />
-            <MetricCard icon="🫧" label="Dissolved O₂" value={water.dissolvedOxygen} unit="mg/L" delay={0.35} />
+            <MetricCard icon="🌧️" label="Rainfall" value={rain} unit="mm" delay={0.15} />
+            <MetricCard icon="💧" label="pH Level" value={ph} delay={0.2} />
+            <MetricCard icon="🌫️" label="Turbidity" value={turbidity} unit="NTU" delay={0.25} />
+            <MetricCard icon="🌡️" label="Temperature" value={temp} unit="°C" delay={0.3} />
+            <MetricCard icon="🫧" label="Dissolved O₂" value={dissolvedOxygen} unit="mg/L" delay={0.35} />
           </div>
         </div>
 
@@ -173,8 +178,8 @@ export default function Index() {
               <p className="text-muted-foreground">{recommendation}</p>
             </div>
             <div className="flex gap-3 shrink-0">
-              <Button variant="outline" onClick={simulate}>
-                🔄 Refresh
+              <Button variant="outline" onClick={refresh} disabled={refreshing || loading}>
+                {refreshing ? "⏳ Fetching…" : "🔄 Refresh live data"}
               </Button>
               <Button onClick={sendAlert} className="ocean-gradient text-primary-foreground border-0 hover:opacity-90">
                 📩 Send Alert
@@ -185,10 +190,10 @@ export default function Index() {
 
         {/* Water Quality Index */}
         <WaterQualityIndex
-          ph={water.ph}
-          turbidity={water.turbidity}
-          temp={water.temp}
-          dissolvedOxygen={water.dissolvedOxygen}
+          ph={ph}
+          turbidity={turbidity}
+          temp={temp}
+          dissolvedOxygen={dissolvedOxygen}
           risk={risk}
         />
 
@@ -199,16 +204,16 @@ export default function Index() {
         <PondManager />
 
         {/* 7-Day Flood Outlook */}
-        <WeatherForecast currentRain={weather.rain} />
+        <WeatherForecast forecast={forecast} />
 
         {/* Daily Operations */}
-        <FeedingSchedule risk={risk} temp={water.temp} />
+        <FeedingSchedule risk={risk} temp={temp} />
 
         {/* Trend Chart */}
-        <TrendChart rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
+        <TrendChart history={history} />
 
         {/* AI Forecast */}
-        <AIForecast risk={risk} rain={weather.rain} ph={water.ph} turbidity={water.turbidity} temp={water.temp} />
+        <AIForecast risk={risk} rain={rain} ph={ph} turbidity={turbidity} temp={temp} />
 
         {/* Fish Stock Impact */}
         <FishStockImpact risk={risk} />
@@ -229,12 +234,12 @@ export default function Index() {
         {/* Report Export */}
         <ReportExport
           risk={risk}
-          rain={weather.rain}
-          ph={water.ph}
-          turbidity={water.turbidity}
-          temp={water.temp}
-          dissolvedOxygen={water.dissolvedOxygen}
-          farmName={farm.name}
+          rain={rain}
+          ph={ph}
+          turbidity={turbidity}
+          temp={temp}
+          dissolvedOxygen={dissolvedOxygen}
+          farmName={farm?.name ?? ""}
         />
 
         {/* How It Works */}
