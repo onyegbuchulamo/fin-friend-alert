@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      farms: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          phone: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          phone?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          latitude?: number
+          location?: string
+          longitude?: number
+          name?: string
+          phone?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      readings: {
+        Row: {
+          dissolved_oxygen: number
+          farm_id: string
+          id: string
+          ph: number
+          rainfall_mm: number
+          recorded_at: string
+          risk_level: string
+          source: string
+          temperature_c: number
+          turbidity_ntu: number
+          water_quality_index: number | null
+        }
+        Insert: {
+          dissolved_oxygen: number
+          farm_id: string
+          id?: string
+          ph: number
+          rainfall_mm: number
+          recorded_at?: string
+          risk_level?: string
+          source?: string
+          temperature_c: number
+          turbidity_ntu: number
+          water_quality_index?: number | null
+        }
+        Update: {
+          dissolved_oxygen?: number
+          farm_id?: string
+          id?: string
+          ph?: number
+          rainfall_mm?: number
+          recorded_at?: string
+          risk_level?: string
+          source?: string
+          temperature_c?: number
+          turbidity_ntu?: number
+          water_quality_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readings_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
